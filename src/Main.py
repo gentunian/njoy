@@ -16,15 +16,16 @@ class Main(QMainWindow):
         print("[Main]: Creating MainWindow")
         QMainWindow.__init__(self)
         self.setCentralWidget(axis)
-        
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     model = JoystickModel()
     #container = axisview.AxisWidgetContainer(axisModel)
     container = JoystickWidget(model)
-
     main = Main(container)
     print("Show")
     main.show()
-    sys.exit(app.exec_())
+    v=app.exec_()
+    model.stop()
+    sys.exit(v)
 
