@@ -1,7 +1,8 @@
 '''
 Created on Jul 8, 2012
 
-@author: monolith
+@author: Sebastian Treu
+@author: sebastian.treu(at)gmail.com
 '''
 from PyQt4.QtGui import QGraphicsScene
 from PyQt4.QtGui import QWidget
@@ -10,7 +11,6 @@ from PyQt4.QtGui import QColor
 from PyQt4.QtGui import QFrame
 from PyQt4.QtGui import QButtonGroup
 from PyQt4.QtGui import QGraphicsPathItem
-from PyQt4.QtGui import QGraphicsSimpleTextItem
 from PyQt4.QtGui import QPainterPath
 from PyQt4.QtGui import QRadioButton
 from PyQt4.QtGui import QGraphicsEllipseItem
@@ -20,9 +20,9 @@ from PyQt4.QtCore import QRectF
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtCore import Qt
 
-from AxisGraphWidgetUi import Ui_axisGraphWidget
-from AxisTextWidgetUi import Ui_axisTextWidget
-from AxisWidgetContainerUi import Ui_axisWidgetContainer
+from ui.AxisGraphWidgetUi import Ui_axisGraphWidget
+from ui.AxisTextWidgetUi import Ui_axisTextWidget
+from ui.AxisWidgetContainerUi import Ui_axisWidgetContainer
 
 class AxisWidgetContainer(QWidget, Ui_axisWidgetContainer):
     def __init__(self, axisModel, parent = None):
@@ -37,10 +37,12 @@ class AxisWidgetContainer(QWidget, Ui_axisWidgetContainer):
         line.setFrameShape(QFrame.HLine)
         line.setFrameShadow(QFrame.Sunken)
         self.gridLayout.addWidget(line, 1, 0, 1, 4)
+        axis = 0
         for axis in range(axisModel.currentJoystickNumAxes()):
             self.__createTextWidgetForAxis__(axis)
-        self.graphWidget = AxisGraphWidget(self)
-        self.gridLayout.addWidget(self.graphWidget, axis + 3, 0, 1, 4)
+        if axis > 0:
+            self.graphWidget = AxisGraphWidget(self)
+            self.gridLayout.addWidget(self.graphWidget, axis + 3, 0, 1, 4)
 
     def __createTextWidgetForAxis__(self, axis):
         textWidget = AxisTextWidget(axis, self)

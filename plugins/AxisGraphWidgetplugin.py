@@ -1,5 +1,6 @@
 '''
-@author: sebastian.treu@gmail.com
+@author: Sebastian Treu
+@author: sebastian.treu(at)gmail.com
 '''
 from PyQt4 import QtGui, QtDesigner
 from axisview import AxisGraphWidget

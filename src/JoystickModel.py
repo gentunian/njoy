@@ -1,7 +1,8 @@
 '''
 Created on Jul 7, 2012
 
-@author: monolith
+@author: Sebastian Treu
+@author: sebastian.treu(at)gmail.com
 '''
 from PyQt4.QtCore import QObject, pyqtProperty
 from PyQt4.QtCore import QThread
@@ -12,7 +13,12 @@ from pygame.joystick import Joystick
 from pygame import locals
 from collections import defaultdict
 import pygame
-
+try:
+    from PyQt4.QtCore import QString
+except ImportError:
+    # we are using Python3 so QString is not defined
+    QString = type("")
+    
 class JoystickEvent(QEvent):
     def __init__(self, jid, eType = QEvent.User):
         super(JoystickEvent, self).__init__(eType)
@@ -105,31 +111,52 @@ class JoystickModel(QObject):
         aJoystick = Joystick(jid)
         aJoystick.init()
         self.joyList[jid] = aJoystick 
-        self.joyList[aJoystick.get_name()] = aJoystick
+        self.joyList["[{id}]{name}".format(id=jid, name=aJoystick.get_name())] = aJoystick
+
+    def joystickCount(self):
+        return pygame.joystick.get_count()
 
     def joystickNames(self):
-        return [ k for k in self.joyList.iterkeys() if isinstance(k, str)]
+        try:
+            return [ k for k in self.joyList.iterkeys() if isinstance(k, str)]
+        except:
+            return []
     
     def currentJoystickId(self):
         return self.current
     
     def currentJoystickName(self):
-        return self.joyList[self.current].get_name()
+        try:
+            return self.joyList[self.current].get_name()
+        except:
+            return ""
     
     def currentJoystickNumAxes(self):
-        return self.joyList[self.current].get_numaxes()
+        try:
+            return self.joyList[self.current].get_numaxes()
+        except:
+            return 0
     
     def currentJoystickNumHats(self):
-        return self.joyList[self.current].get_numhats()
+        try:
+            return self.joyList[self.current].get_numhats()
+        except:
+            return 0
     
     def currentJoystickNumBalls(self):
-        return self.joyList[self.current].get_numballs()
+        try:
+            return self.joyList[self.current].get_numballs()
+        except:
+            return 0
     
     def currentJoystickNumButtons(self):
-        return self.joyList[self.current].get_numbuttons()
+        try:
+            return self.joyList[self.current].get_numbuttons()
+        except:
+            return 0
     
     def setCurrentJoystickByName(self, jname):
-        self.setCurrentJoystickById(self.joyList[jname].get_id())
+        self.setCurrentJoystickById(self.joyList[str(jname)].get_id())
     
     def setCurrentJoystickById(self, jid):
         self.current = jid
@@ -187,6 +214,7 @@ class EventDispatcher(QThread):
         print("[EventDispatcher]: Starting...")
         while(self.alive):
             e = pygame.event.wait()
+            print("asdf: ", e)
             # Don't process any event coming from joystick that are not
             # selected by the model.
             if e.joy == self.model.currentJoystickId():
