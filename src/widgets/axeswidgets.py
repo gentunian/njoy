@@ -140,7 +140,7 @@ class AxisScene(QGraphicsScene):
         self.pathItem.setPen(QPen(QColor("red"), 1, Qt.DotLine))
         self.path = None
         self.xAxis = "Select Axis..."
-        self.yAxis = "S\ne\nl\ne\nc\nt\nA\nx\ni\ns"
+        self.yAxis = self.xAxis
         self.addItem(self.dot)
     
     def setXAxisName(self, x):
@@ -148,7 +148,7 @@ class AxisScene(QGraphicsScene):
         self.invalidate()
 
     def setYAxisName(self, y):
-        self.yAxis = "A\nx\ni\ns\n\n" + str(y)
+        self.yAxis = "Axis " + str(y)
         self.invalidate()
 
     def pathToggled(self, toggled):
@@ -196,7 +196,7 @@ class AxisScene(QGraphicsScene):
             painter.drawLine(r.left(), r.center().y(), r.right(), r.center().y())
             painter.setPen(QPen(QColor("red"), 1))
             painter.drawText(QRectF(r.left(), r.center().y(), 80, 80), self.xAxis)
-            painter.drawText(QRectF(r.center().x()+5, r.top(), 20, 180), self.yAxis)
+            painter.drawText(QRectF(r.center().x()+5, r.top(), 80, 80), self.yAxis)
         if self.path != None:
             painter.setPen(QPen(QColor("red"), 1))
             painter.drawLine(QPointF(self.lastPos['x'], r.top()), QPointF(self.lastPos['x'], r.bottom()))
