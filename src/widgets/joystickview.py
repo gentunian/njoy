@@ -7,7 +7,8 @@ Created on Jul 9, 2012
 from PyQt4.QtGui import QWidget
 from PyQt4.QtCore import QString
 from ui.JoystickWidgetUi import Ui_joystickWidget
-from axisview import AxisWidgetContainer
+from src.widgets.axeswidgets import AxisWidgetContainer
+from src.widgets.buttonswidgets import ButtonWidgetContainer
 
 class JoystickWidget(QWidget, Ui_joystickWidget):
     
@@ -16,6 +17,8 @@ class JoystickWidget(QWidget, Ui_joystickWidget):
         self.setupUi(self)
         self.model = model
         self.__configureJoystickCombo__()
+        self.buttonsWidget = ButtonWidgetContainer(model, None)
+        self.tabWidget.addTab(self.buttonsWidget, "Buttons")
         self.axisWidget = AxisWidgetContainer(model, None)
         self.tabWidget.addTab(self.axisWidget, "Axes")
     

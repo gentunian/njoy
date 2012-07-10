@@ -7,9 +7,8 @@ Created on Jul 7, 2012
 from PyQt4.QtGui import QApplication
 from PyQt4.QtGui import QMainWindow
 import sys
-import axisview
-import joystickview
-from JoystickModel import JoystickModel
+from src.models.JoystickModel import JoystickModel
+from src.widgets.joystickview import JoystickWidget
 
 class Main(QMainWindow):
     
@@ -20,9 +19,9 @@ class Main(QMainWindow):
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    axisModel = JoystickModel()
+    model = JoystickModel()
     #container = axisview.AxisWidgetContainer(axisModel)
-    container = joystickview.JoystickWidget(axisModel)
+    container = JoystickWidget(model)
 
     main = Main(container)
     print("Show")

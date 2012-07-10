@@ -8,10 +8,10 @@ from PyQt4.QtGui import QGraphicsScene
 from PyQt4.QtGui import QWidget
 from PyQt4.QtGui import QPen
 from PyQt4.QtGui import QColor
-from PyQt4.QtGui import QFrame
 from PyQt4.QtGui import QButtonGroup
 from PyQt4.QtGui import QGraphicsPathItem
 from PyQt4.QtGui import QPainterPath
+from PyQt4.QtGui import QGridLayout
 from PyQt4.QtGui import QRadioButton
 from PyQt4.QtGui import QGraphicsEllipseItem
 from PyQt4.QtCore import QPointF
@@ -19,33 +19,34 @@ from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QRectF
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtCore import Qt
-
+from PyQt4.QtGui import QSizePolicy
 from ui.AxisGraphWidgetUi import Ui_axisGraphWidget
-from ui.AxisTextWidgetUi import Ui_axisTextWidget
-from ui.AxisWidgetContainerUi import Ui_axisWidgetContainer
+from src.widgets.common import TextValueWidget
+from src.widgets.common import GridWidget
 
-class AxisWidgetContainer(QWidget, Ui_axisWidgetContainer):
+class AxisWidgetContainer(GridWidget):
     def __init__(self, axisModel, parent = None):
-        super(AxisWidgetContainer, self).__init__(parent)
+        super(AxisWidgetContainer, self).__init__(["_Axis", "_Value_", "_X(24)", "_Y(24)"], parent)
         self.axisModel = axisModel
-        self.setupUi(self)
         self.xGroup = QButtonGroup()
         self.yGroup = QButtonGroup()
         self.xGroup.buttonClicked.connect(self.showXAxisButtonClicked)
         self.yGroup.buttonClicked.connect(self.showYAxisButtonClicked)
-        line = QFrame()
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        self.gridLayout.addWidget(line, 1, 0, 1, 4)
         axis = 0
         for axis in range(axisModel.currentJoystickNumAxes()):
             self.__createTextWidgetForAxis__(axis)
         if axis > 0:
             self.graphWidget = AxisGraphWidget(self)
-            self.gridLayout.addWidget(self.graphWidget, axis + 3, 0, 1, 4)
-
+            self.addWidget(self.graphWidget, 3, 0, 1, 2)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
+        self.scrollArea.setSizePolicy(sizePolicy)
+        
     def __createTextWidgetForAxis__(self, axis):
         textWidget = AxisTextWidget(axis, self)
+        self.axisModel.addAxisObserver(textWidget, axis)
         showInX = QRadioButton()
         showInY = QRadioButton()
         showInX.setObjectName(str(axis))
@@ -56,12 +57,12 @@ class AxisWidgetContainer(QWidget, Ui_axisWidgetContainer):
         showInY.setMaximumSize(24, 24)
         self.xGroup.addButton(showInX)
         self.yGroup.addButton(showInY)
-        self.gridLayout.addWidget(textWidget, axis+2, 0, 1, 2)
-        self.gridLayout.addWidget(showInX, axis+2, 2, 1, 1)
-        self.gridLayout.addWidget(showInX, axis+2, 2, 1, 1)
-        self.gridLayout.addWidget(showInY, axis+2, 3, 1, 1)
-        self.axisModel.addAxisObserver(textWidget, axis)
-    
+        gridLayout = QGridLayout()
+        gridLayout.addWidget(textWidget, 0, 0, 1, 2)
+        gridLayout.addWidget(showInX, 0, 2, 1, 1)
+        gridLayout.addWidget(showInY, 0, 3, 1, 1)
+        self.addLayoutToScrollArea(gridLayout)
+
     def showXAxisButtonClicked(self, button):
         if button.isChecked():
             self.graphWidget.setXAxis(int(button.objectName()))
@@ -113,15 +114,13 @@ class AxisGraphWidget(QWidget, Ui_axisGraphWidget):
         self.update(event.axis, event.value)
 
 
-class AxisTextWidget(QWidget, Ui_axisTextWidget):
+class AxisTextWidget(TextValueWidget):
     def __init__(self, axis, parent = None):
-        super(AxisTextWidget, self).__init__(parent)
-        self.setupUi(self)
-        self.axis = axis
-        self.axisLabel.setText("Axis " + str(axis) + ":")
+        super(AxisTextWidget, self).__init__("Axis " + str(axis) + ":", parent)
+        self.value.setText(str(0.0))
 
     def customEvent(self, event):
-        self.axisValue.setText("%5.4f" % event.value)
+        self.value.setText("%5.4f" % event.value)
 
 
 class AxisScene(QGraphicsScene):
@@ -138,7 +137,7 @@ class AxisScene(QGraphicsScene):
         self.grid = False
         self.gridPen = QPen(QColor("blue"), 2)
         self.pathItem = QGraphicsPathItem()
-        self.pathItem.setPen(QPen(QColor("green"), 1, Qt.DotLine))
+        self.pathItem.setPen(QPen(QColor("red"), 1, Qt.DotLine))
         self.path = None
         self.xAxis = "Select Axis..."
         self.yAxis = "S\ne\nl\ne\nc\nt\nA\nx\ni\ns"
@@ -182,14 +181,23 @@ class AxisScene(QGraphicsScene):
             self.pathItem.setPath(self.path)
         self.dot.setPos(self.lastPos['x'], self.lastPos['y'])
         self.invalidate()
-        
-    def drawForeground(self, painter, rect):
+    
+    def drawBackground(self, painter, rect):
         if self.grid:
             painter.setClipRect(rect)
             painter.setPen(self.gridPen)
-            r = self.sceneRect()
+
+    def drawForeground(self, painter, rect):
+        painter.setClipRect(rect)
+        painter.setPen(self.gridPen)
+        r = self.sceneRect()
+        if self.grid:
             painter.drawLine(r.center().x(), r.top(), r.center().x(), r.bottom())
             painter.drawLine(r.left(), r.center().y(), r.right(), r.center().y())
             painter.setPen(QPen(QColor("red"), 1))
             painter.drawText(QRectF(r.left(), r.center().y(), 80, 80), self.xAxis)
             painter.drawText(QRectF(r.center().x()+5, r.top(), 20, 180), self.yAxis)
+        if self.path != None:
+            painter.setPen(QPen(QColor("red"), 1))
+            painter.drawLine(QPointF(self.lastPos['x'], r.top()), QPointF(self.lastPos['x'], r.bottom()))
+            painter.drawLine(QPointF(r.left(), self.lastPos['y']), QPointF(r.right(), self.lastPos['y']))

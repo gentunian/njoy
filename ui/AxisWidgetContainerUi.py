@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '../ui/axisWidgetContainer.ui'
+# Form implementation generated from reading ui file 'axisWidgetContainer.ui'
 #
-# Created: Mon Jul  9 04:39:48 2012
+# Created: Mon Jul  9 23:45:54 2012
 #      by: PyQt4 UI code generator 4.8.6
 #
 # WARNING! All changes made in this file will be lost!
@@ -22,6 +22,11 @@ class Ui_axisWidgetContainer(object):
         self.gridLayout = QtGui.QGridLayout(axisWidgetContainer)
         self.gridLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.line = QtGui.QFrame(axisWidgetContainer)
+        self.line.setFrameShape(QtGui.QFrame.HLine)
+        self.line.setFrameShadow(QtGui.QFrame.Sunken)
+        self.line.setObjectName(_fromUtf8("line"))
+        self.gridLayout.addWidget(self.line, 1, 0, 1, 4)
         self.label_4 = QtGui.QLabel(axisWidgetContainer)
         self.label_4.setMaximumSize(QtCore.QSize(24, 24))
         self.label_4.setLayoutDirection(QtCore.Qt.RightToLeft)
@@ -29,6 +34,13 @@ class Ui_axisWidgetContainer(object):
         self.label_4.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.gridLayout.addWidget(self.label_4, 0, 3, 1, 1)
+        self.label_3 = QtGui.QLabel(axisWidgetContainer)
+        self.label_3.setMaximumSize(QtCore.QSize(24, 24))
+        self.label_3.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.label_3.setText(QtGui.QApplication.translate("axisWidgetContainer", "X", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
         self.label_2 = QtGui.QLabel(axisWidgetContainer)
         self.label_2.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.label_2.setText(QtGui.QApplication.translate("axisWidgetContainer", "Value", None, QtGui.QApplication.UnicodeUTF8))
@@ -42,13 +54,6 @@ class Ui_axisWidgetContainer(object):
         self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        self.label_3 = QtGui.QLabel(axisWidgetContainer)
-        self.label_3.setMaximumSize(QtCore.QSize(24, 24))
-        self.label_3.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.label_3.setText(QtGui.QApplication.translate("axisWidgetContainer", "X", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
-        self.label_3.setObjectName(_fromUtf8("label_3"))
-        self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
 
         self.retranslateUi(axisWidgetContainer)
         QtCore.QMetaObject.connectSlotsByName(axisWidgetContainer)

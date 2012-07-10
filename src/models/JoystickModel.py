@@ -214,7 +214,6 @@ class EventDispatcher(QThread):
         print("[EventDispatcher]: Starting...")
         while(self.alive):
             e = pygame.event.wait()
-            print("asdf: ", e)
             # Don't process any event coming from joystick that are not
             # selected by the model.
             if e.joy == self.model.currentJoystickId():
@@ -229,8 +228,8 @@ class EventDispatcher(QThread):
                     pass
                 elif e.type == locals.JOYBUTTONDOWN:
                     #print("[EventDispatcher]: JOYBUTTONDOWN")
-                    self.model.notifyButtonChange(e.button, False)
+                    self.model.notifyButtonChange(e.button, True)
                 elif e.type == locals.JOYBUTTONUP:
                     #print("[EventDispatcher]: JOYBUTTONUP")
-                    self.model.notifyButtonChange(e.button, True)
+                    self.model.notifyButtonChange(e.button, False)
 
