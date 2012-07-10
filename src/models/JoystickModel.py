@@ -195,6 +195,11 @@ class JoystickModel(QObject):
             #observer.update(button, value)
             QApplication.postEvent(observer, JoystickButtonEvent(self.current, button, value))
 
+    def stop(self):
+        print("[JoystickModel]: stop")
+        pygame.event.post(pygame.event.Event(pygame.QUIT, dict()))
+        pygame.quit()
+
 class EventDispatcher(QThread):
     
     def __init__(self, model, parent = None):
@@ -202,21 +207,21 @@ class EventDispatcher(QThread):
         QThread.__init__(self, parent)
         self.model = model
         pygame.event.set_allowed(None)
-        pygame.event.set_allowed([pygame.JOYAXISMOTION, pygame.JOYBALLMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP, pygame.JOYHATMOTION])
+        pygame.event.set_allowed([pygame.QUIT, pygame.JOYAXISMOTION, pygame.JOYBALLMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP, pygame.JOYHATMOTION])
         
     def __end__(self):
         print("[EventDispatcher]: end.")
     
-    def alive(self, isAlive):
-        self.alive = isAlive
-    
     def run(self):
-        print("[EventDispatcher]: Starting...")
+        self.alive = True
+        print("[EventDispatcher]: Main loop starting...")
         while(self.alive):
             e = pygame.event.wait()
-            # Don't process any event coming from joystick that are not
+            if e.type == locals.QUIT:
+                self.alive =False
+            elif e.joy == self.model.currentJoystickId():
+                # Don't process any event coming from joystick that are not
             # selected by the model.
-            if e.joy == self.model.currentJoystickId():
                 if e.type == locals.JOYAXISMOTION:
                     #print("[EventDispatcher]: JOYAXISMOTION in joystick {} at axis {} with value {}".format(e.joy, e.axis, e.value))
                     self.model.notifyAxisChange(e.axis, e.value)
@@ -232,4 +237,5 @@ class EventDispatcher(QThread):
                 elif e.type == locals.JOYBUTTONUP:
                     #print("[EventDispatcher]: JOYBUTTONUP")
                     self.model.notifyButtonChange(e.button, False)
+        print("[EventDispatcher]: Main loop finished.")
 
