@@ -18,7 +18,119 @@ try:
 except ImportError:
     # we are using Python3 so QString is not defined
     QString = type("")
+
+""" The *Event classes wraps pygame or sfml events into Qt Events (QEvent).
+    For some purist this will sound like overloading the project with classes...Well, yes.
     
+    The project does not imply or tend to use real-time scenarios where performance or latency
+    is key. The project itselft has begun as a joystick-viewer tool where in an unknown future
+    could derive in a calibration tool.
+    
+    This will imply leaving pygame or sfml and use some sort of low level library to access
+    joystick data and modify axes values. So, it's hard and far away to that to happen.
+    
+    JoystickEvent classes will provide accesible context in order to know some values
+    about the true joystick event and apply semantics to that concept for widgets (Views).
+    
+    The main work is done in the model. The model has a number of different kind of observers.
+    Observers could be buttons observers, axis observers, hat observers, and so on. In the most
+    basic way, observers should be interested objects on showing some joystick feature data, such
+    as, the value of some buttons, the position of axis 0, etc. These objects mainly will provide
+    user output (a view). The view could be any kind of object (in this terms, an observer) that
+    KNOWS where is looking (which joystick feature is observing) and KNOWS what a JoystickEvent
+    for that particular feature is.
+    
+    As an implementation detail, the Qt Events (QEvent) are posted using the Qt system for posting
+    events to those observers (QtApplication.postEvent(observer, aJoystickEvent)). Each interested
+    observer SHOULD BE a QObject. And in order to manage or handle the event posted to it, it has
+    the need to implement the method 'customEvent(self, event)'. Inside that method, the observer
+    could do anything. The observer has to know how to manage the event argument and manage it as
+    the observer likes.
+    
+    The thread running and waiting on the queue of joystick events will call the model notify*
+    methods in order to allow the model to post the events to the registered observer for such event.
+    
+    There is not much more magic than that with this wrapped joystick model to mention. One thing to
+    notice is the restriction that has been implied in the model: There's only ONE joystick at a time
+    being pooled. This means that the model holds a current joystick as selected, and any event upcoming
+    from any other joystick rather than the selected it will be ignored.
+    
+    Having say so, don't expect the model to broadcast all joystick events to every observer. The model
+    WILL ONLY post events for the currently selected joystick. This implies that SOMEONE ELSE must
+    say which one of the available joystick will be the currently selected. This will be done by someone
+    using the model and calling one of these methods:
+    
+            setCurrentJoystickById(jid)
+            or
+            setCurrentJoystickByName(jname) --- joystick names prefixes with [jid], e.g.: "[0]TheUberMegaWachistationJoystick"
+    
+    Of course that someone calling or using those methods should KNOW which joystick id or joystick name
+    to select. That information will come with the model with both of these methods:
+    
+            joystickNames()
+            and
+            joystickCount() --- joystick ids will go from 0 to joystickCount() - 1
+    
+    Another thing to mention is that, any object that want to configure a set of views by using the model,
+    it has a bunch of methods for doing that, and again, ALWAYS for the currently selected joystick that
+    which by default it's 0 (if any joystick is detected, -1 else), they are:
+    
+        currentJoystickNumAxes() --- current joystick axes number
+        currentJoystickNumHats() --- current joystick hats number
+        currentJoystickNumBalls() --- current joystick balls (?) number
+        currentJoystickNumButtons() --- current joystick buttons number
+        joystickCount() --- see above
+        joystickNames() --- see above
+        
+    In order to start receiving QEvents for yours QWidgets, you need to register or add the interested QObject
+    to the model. This is done by the following way:
+    
+        if __name__ == '__main__':
+            jmodel = JoystickModel()
+            buttonTenObserver = ButtonTenObserver()
+            axisOneObserver = AxisOneObserver()
+            jmodel.addButtonObserver(10, buttonTenObserver)
+            jmodel.addAxisObserver(1, axisOneObserver)
+    
+    As soon as the observers are registered to the model, they will start receiving events for the CURRENTLY
+    SELECTED JOYSTICK. Note that you only register a button observer. This will be changed in the future. The
+    main disadvantage is that you can connect a joystick that has NO button 10. The proper way to avoid, is
+    to code something as follows:
+    
+        if __name__ == '__main__':
+            jmodel = JoystickModel()
+            for button in jmodel.currentJoystickNumButtons():
+                jmodel.addButtonObserver(button, theObserver)
+    
+    That will ensure that theObserver is NOW observing the current joystick buttons. Of course that, if the
+    current joystick is changed, the actor of that action should know what is doing so it will need to trigger
+    the appropiate way of registering the appropiates observer.
+    
+    Anyway, nothing bad will happen. I'll explain way. Basically, the model ONLY notifies observers about the
+    CURRENTLY selected joystick. You have an object responsible of selecting the current joystick. So, this
+    situations arises:
+    
+        * If you register an observer for button, say, 10 and the currently selected joystick 
+          has no button 10, nothing happens.
+        
+        * If you register an observer for a button, say, 10 and the currently selected joystick
+          has a button number 10 it will receive a notification. If now, the currently selected
+          joystick is different from the other BUT it also HAS a button number 10, it will
+          receive the notification. It will NOT receive notifications for a joystick that is not
+          currently selected.
+          
+    See? Nothing bad happens. Things are going right. The observer of button number 10 always get a button notification
+    when the button number 10 is pressed/depressed. And always it will receive that notification from the currently
+    selected joystick...piuf...
+
+    As I'm writting this, 11 July 2012, the goal of this model approach will be to create an abstraction between the
+    not-so-low-level driver and QObjects keeping flexibility and extensibility. The main goal is to write the model
+    once and enjoy the data using views. Probably, the Qt dependency in the model should be removed in some future.
+    That will allow the model to be used by Gtk, Qt, and whichever GT.
+    
+    July 11, 2012 Sebastian Treu
+    sebastian.treu(at)gmail.com
+    """
 class JoystickEvent(QEvent):
     def __init__(self, jid, eType = QEvent.User):
         super(JoystickEvent, self).__init__(eType)
