@@ -77,6 +77,7 @@ _IOC_NONE       = 0
 JOY = ord('j')
 
 
+
 class DeviceReader(Process):
     """
         This process is dedicated to do convertions from low-level API to high-level events.
@@ -205,6 +206,7 @@ class EventConsumer(Thread):
     
     def run(self):
         self.consuming = True
+
         while(self.consuming):
             e = self.queue.get()
             if e.eventType() == events.NEW_EVENT:
@@ -217,8 +219,13 @@ class EventConsumer(Thread):
                 print("[EventConsumoer]: Joystick %d won't receive events anymore."%e.jid())
                 del self.joyList[e.jid()]
             else:
-                print("[EventConsumer]: Event: ", e, " JOY: ", self.joyList[e.jid()].joyId())
-                self.joyList[e.jid()].processEvent(e)
+                print("[EventConsumer]: Event: %s"%events.eventName[e.eventType()])
+                p = Process(target=self.processEvent, args=(e,))
+                p.start()
+
+    def processEvent(self, e):
+        print("[EventConsumer]: Processing event %s"%events.eventName[e.eventType()])
+        self.joyList[e.jid()].processEvent(e)
 
 class JoystickModel(object):
     """
@@ -263,7 +270,7 @@ class JoystickModel(object):
         return self.joylist.values()
     
     def __del__(self):
-        print("[JoyostickModel]: Object no more exists.")
+        print("[JoystickModel]: Object no more exists.")
         self.reader.join(5)
     
 if __name__ == '__main__':
@@ -271,6 +278,8 @@ if __name__ == '__main__':
     class Observer(JoystickChangeObserver):
         def stateChanged(self, change):
             super(Observer, self).stateChanged(change)
+            while(True):
+                pass
 
     observer = Observer()
     model = JoystickModel()
